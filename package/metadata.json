@@ -11,7 +11,7 @@
         "Description": "Shows Syncthing folder and device status",
         "Icon": "syncthing",
         "Id": "org.amritanshu.syncthing",
-        "License": "MIT",
+        "License": "GPL-2.0-or-later",
         "Name": "Syncthing",
         "Version": "0.1"
     },

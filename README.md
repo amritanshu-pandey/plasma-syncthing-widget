@@ -30,3 +30,11 @@ Then add "Syncthing" from *Add Widgets*.
 ## Test
 
     plasmawindowed org.amritanshu.syncthing
+
+## License
+
+Copyright (c) 2026 Amritanshu Pandey
+
+GPL-2.0-or-later. See [LICENSE](LICENSE).
+
+The Syncthing logo belongs to the Syncthing project.
