@@ -1,0 +1,19 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Amritanshu Pandey",
+                "Email": "email@amritanshu.in"
+            }
+        ],
+        "Category": "Online Services",
+        "Description": "Shows Syncthing folder and device status",
+        "Icon": "syncthing",
+        "Id": "org.amritanshu.syncthing",
+        "License": "MIT",
+        "Name": "Syncthing",
+        "Version": "0.1"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
