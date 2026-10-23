@@ -3,10 +3,10 @@
     "KPlugin": {
         "Authors": [
             {
-                "Name": "Amritanshu Pandey",
-                "Email": "email@amritanshu.in"
+                "Name": "Amritanshu Pandey"
             }
         ],
+        "BugReportUrl": "https://github.com/amritanshu-pandey/plasma-syncthing-widget/issues",
         "Category": "Online Services",
         "Description": "Shows Syncthing folder and device status",
         "Icon": "syncthing",
