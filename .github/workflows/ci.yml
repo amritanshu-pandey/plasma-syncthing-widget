@@ -1,0 +1,18 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    steps:
+      - name: Install dependencies
+        run: >
+          dnf -y install git qt6-qtdeclarative-devel libplasma plasma5support
+          kf6-kirigami kf6-kcmutils kf6-kcoreaddons plasma-workspace
+      - uses: actions/checkout@v4
+      - name: Lint and test
+        run: tests/run.sh

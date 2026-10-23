@@ -9,11 +9,14 @@ import org.kde.plasma.plasma5support as Plasma5Support
 import org.kde.kirigami as Kirigami
 import org.kde.coreaddons as KCoreAddons
 
+import "logic.js" as Logic
+
 PlasmoidItem {
     id: root
 
     readonly property string baseUrl: Plasmoid.configuration.url.replace(/\/+$/, "")
     property string apiKey: Plasmoid.configuration.apiKey
+    readonly property string homePath: StandardPaths.writableLocation(StandardPaths.HomeLocation).toString().replace(/^file:\/\//, "")
 
     property bool online: false
     property string errorText: ""
@@ -27,14 +30,7 @@ PlasmoidItem {
     readonly property int connectedCount: remoteDevices.filter(d => connections[d.deviceID]?.connected).length
     readonly property bool allPaused: remoteDevices.length > 0 && remoteDevices.every(d => d.paused)
 
-    // offline, error, syncing or idle
-    readonly property string overallState: {
-        if (!online) return "offline";
-        const states = folders.filter(f => !f.paused).map(f => folderStatus[f.id]?.state ?? "");
-        if (states.includes("error")) return "error";
-        if (states.some(s => s !== "idle" && s !== "")) return "syncing";
-        return "idle";
-    }
+    readonly property string overallState: Logic.overallState(online, folders, folderStatus)
 
     function stateColor(state) {
         switch (state) {
@@ -60,24 +56,15 @@ PlasmoidItem {
     }
 
     function folderPercent(folder) {
-        const st = folderStatus[folder.id];
-        if (!st || !st.globalBytes) return 100;
-        return Math.floor(100 * st.inSyncBytes / st.globalBytes);
-    }
-
-    function expandPath(path) {
-        const home = StandardPaths.writableLocation(StandardPaths.HomeLocation).toString().replace(/^file:\/\//, "");
-        return path.replace(/^~(?=\/|$)/, home);
+        return Logic.folderPercent(folderStatus[folder.id]);
     }
 
     function openFolder(path) {
-        const encoded = expandPath(path).split("/").map(encodeURIComponent).join("/");
-        Qt.openUrlExternally("file://" + encoded);
+        Qt.openUrlExternally(Logic.fileUrl(path, homePath));
         root.expanded = false;
     }
 
     // Use curl so the self-signed HTTPS cert of the web UI is accepted
-
     Plasma5Support.DataSource {
         id: executable
         engine: "executable"
@@ -97,16 +84,8 @@ PlasmoidItem {
         }
     }
 
-    function shellQuote(s) {
-        return "'" + String(s).replace(/'/g, "'\\''") + "'";
-    }
-
     function api(path, cb, method) {
-        const cmd = "curl -skL --max-time 5"
-            + (method === "POST" ? " -X POST" : "")
-            + " -H " + shellQuote("X-API-Key: " + apiKey)
-            + " " + shellQuote(baseUrl + path);
-        executable.run(cmd, (code, stdout) => {
+        executable.run(Logic.curlCommand(baseUrl, apiKey, path, method), (code, stdout) => {
             let json = null;
             if (code === 0) {
                 try { json = JSON.parse(stdout); } catch (e) {}
@@ -139,7 +118,7 @@ PlasmoidItem {
         api("/rest/system/status", (json, raw) => {
             if (!json || !json.myID) {
                 online = false;
-                errorText = /CSRF|Unauthorized|Forbidden/.test(raw || "")
+                errorText = Logic.isAuthError(raw)
                     ? i18n("Syncthing rejected the API key.")
                     : i18n("Cannot reach Syncthing at %1", baseUrl);
                 return;
@@ -150,7 +129,7 @@ PlasmoidItem {
 
             api("/rest/config/folders", fs => {
                 if (!fs) return;
-                folders = fs.map(f => ({ id: f.id, label: f.label || f.id, path: f.path, paused: f.paused }));
+                folders = Logic.parseFolders(fs);
                 folders.filter(f => !f.paused).forEach(f => {
                     api("/rest/db/status?folder=" + encodeURIComponent(f.id), st => {
                         if (!st) return;
@@ -161,7 +140,7 @@ PlasmoidItem {
                 });
             });
             api("/rest/config/devices", ds => {
-                if (ds) devices = ds.map(d => ({ deviceID: d.deviceID, name: d.name || d.deviceID.slice(0, 7), paused: d.paused }));
+                if (ds) devices = Logic.parseDevices(ds);
             });
             api("/rest/system/connections", c => {
                 if (c) connections = c.connections;
@@ -316,7 +295,7 @@ PlasmoidItem {
                         Layout.rightMargin: Kirigami.Units.smallSpacing
                         onClicked: root.openFolder(modelData.path)
 
-                        PlasmaComponents.ToolTip { text: i18n("Open %1", root.expandPath(folderDelegate.modelData.path)) }
+                        PlasmaComponents.ToolTip { text: i18n("Open %1", Logic.expandPath(folderDelegate.modelData.path, root.homePath)) }
 
                         contentItem: ColumnLayout {
                             spacing: 0

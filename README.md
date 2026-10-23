@@ -29,7 +29,20 @@ Then add "Syncthing" from *Add Widgets*.
 
 ## Test
 
+Run the widget in a window:
+
     plasmawindowed org.amritanshu.syncthing
+
+Run lint and unit tests (needs `qt6-qtdeclarative-devel`):
+
+    tests/run.sh
+
+Or in a container:
+
+    podman run --rm -v "$PWD":/src:Z -w /src fedora:latest sh -c \
+        'dnf -yq install qt6-qtdeclarative-devel libplasma plasma5support kf6-kirigami kf6-kcmutils kf6-kcoreaddons plasma-workspace && tests/run.sh'
+
+Tests are in `tests/`. They use Qt Quick Test and run in CI on every push.
 
 ## License
 
