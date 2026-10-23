@@ -37,4 +37,10 @@ Copyright (c) 2026 Amritanshu Pandey
 
 GPL-2.0-or-later. See [LICENSE](LICENSE).
 
-The Syncthing logo belongs to the Syncthing project.
+## Logo
+
+The colored icon is the `syncthing` icon from your system icon theme.
+The monochrome icon (`package/contents/icons/syncthing-symbolic.svg`) is made from the official Syncthing logo.
+
+The Syncthing name and logo belong to the Syncthing project. They are not covered by this project's license.
+This project is not part of, or endorsed by, the Syncthing project.
